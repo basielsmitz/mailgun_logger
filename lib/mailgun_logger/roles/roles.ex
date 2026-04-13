@@ -75,18 +75,18 @@ defmodule MailgunLogger.Roles do
 
   def can?(_, _), do: false
 
-  def is?(%User{roles: roles}, :superuser), do: is(roles, "superuser")
-  def is?(%User{roles: roles}, :admin), do: is(roles, "admin")
-  def is?(%User{roles: roles}, :member), do: is(roles, "member")
+  def is?(%User{roles: roles}, :superuser), do: is(roles, @superuser_role)
+  def is?(%User{roles: roles}, :admin), do: is(roles, @admin_role)
+  def is?(%User{roles: roles}, :member), do: is(roles, @member_role)
   def is?(_, _), do: raise("Roles.is/2 requires roles to be preloaded")
 
   defp is(roles, role) when is_binary(role), do: Enum.map(roles, & &1.name) |> Enum.member?(role)
 
   def abilities(%User{roles: []}), do: []
   def abilities(%User{roles: roles}), do: hd(roles) |> abilities()
-  def abilities(%Role{name: "admin"}), do: @admin_actions
-  def abilities(%Role{name: "superuser"}), do: @superuser_actions
-  def abilities(%Role{name: "member"}), do: @member_actions
+  def abilities(%Role{name: @admin_role}), do: @admin_actions
+  def abilities(%Role{name: @superuser_role}), do: @superuser_actions
+  def abilities(%Role{name: @member_role}), do: @member_actions
 
   def roles(%User{roles: roles}), do: Enum.map(roles, & &1.name)
 end

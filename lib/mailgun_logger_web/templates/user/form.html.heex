@@ -18,6 +18,40 @@
     options={[{"System", "system"}, {"Light", "light"}, {"Dark", "dark"}]}
   />
 
+
+  <%
+    is_self = assigns[:is_self] || false
+  %>
+
+  <%= if assigns[:roles] do %>
+    <%
+      selected_role_ids =
+        case @changeset.data.roles do
+          %Ecto.Association.NotLoaded{} -> []
+          roles -> Enum.map(roles, & &1.id)
+        end
+    %>
+
+    <div class="form-group">
+      <label>Roles</label>
+
+      <%= for role <- @roles do %>
+        <div>
+          <input
+            type="checkbox"
+            name="user[role_ids][]"
+            value={role.id}
+            checked={role.id in selected_role_ids}
+            disabled={
+              is_self and (role.name == "admin" or role.name == "superuser")
+            }
+          />
+          <%= role.name %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
   <div class="form-group mt-5">
     {submit("submit", class: "btn btn-primary")}
   </div>

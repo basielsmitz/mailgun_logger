@@ -3,6 +3,7 @@ defmodule MailgunLoggerWeb.UserController do
 
   alias MailgunLogger.Users
   alias MailgunLogger.User
+  alias MailgunLogger.Roles
 
   def index(conn, _) do
     users = Users.list_users()
@@ -11,31 +12,37 @@ defmodule MailgunLoggerWeb.UserController do
 
   def new(conn, _) do
     changeset = User.changeset(%User{})
-    render(conn, :new, changeset: changeset)
+    roles = Roles.list_roles()
+    render(conn, :new, changeset: changeset, roles: roles)
   end
 
   def create(conn, %{"user" => params}) do
+    roles = Roles.list_roles()
+
     case Users.create_user(params) do
       {:ok, _} -> redirect(conn, to: Routes.user_path(conn, :index))
-      {:error, changeset} -> render(conn, :new, changeset: changeset)
+      {:error, changeset} -> render(conn, :new, changeset: changeset, roles: roles)
     end
   end
 
   def edit(conn, %{"id" => id}) do
     user = Users.get_user!(id)
     changeset = User.changeset(user)
-    render(conn, :edit, changeset: changeset, user: user)
+    roles = Roles.list_roles()
+    is_self = user.id == conn.assigns.current_user.id
+    render(conn, :edit, changeset: changeset, user: user, roles: roles, is_self: is_self)
   end
 
   def update(conn, %{"id" => id, "user" => params}) do
     user = Users.get_user!(id)
+    roles = Roles.list_roles()
 
     case Users.update_user(user, params) do
       {:ok, _} ->
         redirect(conn, to: Routes.user_path(conn, :index))
 
       {:error, changeset} ->
-        render(conn, :edit, changeset: changeset, user: user)
+        render(conn, :edit, changeset: changeset, user: user, roles: roles)
     end
   end
 
