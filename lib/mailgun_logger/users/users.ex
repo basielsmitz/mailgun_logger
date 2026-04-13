@@ -166,4 +166,11 @@ defmodule MailgunLogger.Users do
     |> Ecto.Changeset.put_assoc(:roles, roles)
     |> Repo.update()
   end
+
+  @spec delete_user(User.t()) :: ecto_user()
+  def delete_user(%User{} = user) do
+    Repo.delete(user)
+  end
+
+
 end
