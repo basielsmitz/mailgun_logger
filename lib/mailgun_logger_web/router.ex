@@ -23,6 +23,10 @@ defmodule MailgunLoggerWeb.Router do
     plug(MailgunLoggerWeb.Plugs.Auth)
   end
 
+  pipeline :admin_only do
+    plug(MailgunLoggerWeb.Plugs.AuthorizeRole, [:admin, :superuser])
+  end
+
   # Always except in prod
   if Application.compile_env(:mailgun_logger, :env) == :dev do
     forward("/sent_emails", Bamboo.SentEmailViewerPlug)
@@ -76,15 +80,22 @@ defmodule MailgunLoggerWeb.Router do
 
     resources("/events", EventController, only: [:index, :show])
     get("/events/:id/stored_message", EventController, :stored_message)
-    resources("/accounts", AccountController, except: [:show])
+
     get("/profile", ProfileController, :edit)
     put("/profile", ProfileController, :update)
-    resources("/users", UserController, except: [:show])
 
     get("/", PageController, :index)
     post("/trigger-run", PageController, :trigger_run)
-    get("/stats", PageController, :stats)
-    get("/graphs", PageController, :graphs)
     get("/non-affiliation", PageController, :non_affiliation)
   end
+  scope "/", MailgunLoggerWeb do
+    pipe_through([:browser, :auth, :admin_only])
+
+    resources("/accounts", AccountController, except: [:show])
+    resources("/users", UserController, except: [:show])
+
+    get("/stats", PageController, :stats)
+    get("/graphs", PageController, :graphs)
+  end
+
 end
