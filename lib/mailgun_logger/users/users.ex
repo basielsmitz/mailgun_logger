@@ -3,6 +3,7 @@ defmodule MailgunLogger.Users do
 
   alias MailgunLogger.Repo
   alias MailgunLogger.User
+  alias MailgunLogger.Roles
 
 
   @type ecto_user() :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
@@ -146,20 +147,23 @@ defmodule MailgunLogger.Users do
 
   @spec create_user(map) :: ecto_user()
   def create_user(params) do
+    role_ids = Map.get(params, "role_ids", [])
+    roles = Roles.get_roles_by_id(role_ids)
+
     %User{}
     |> User.changeset(params)
+    |> Ecto.Changeset.put_assoc(:roles, roles)
     |> Repo.insert()
   end
 
   @spec update_user(User.t(), map) :: ecto_user()
   def update_user(user, params) do
+    role_ids = Map.get(params, "role_ids", [])
+    roles = Roles.get_roles_by_id(role_ids)
+
     user
     |> User.update_changeset(params)
+    |> Ecto.Changeset.put_assoc(:roles, roles)
     |> Repo.update()
-  end
-
-  @spec delete_user(User.t()) :: ecto_user()
-  def delete_user(%User{} = user) do
-    Repo.delete(user)
   end
 end
