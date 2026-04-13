@@ -36,15 +36,23 @@
       <label>Roles</label>
 
       <%= for role <- @roles do %>
+        <%
+          checked = role.id in selected_role_ids
+          protected =
+            is_self and checked and (role.name == "admin" or role.name == "superuser")
+        %>
+
         <div>
+          <%= if protected do %>
+            <input type="hidden" name="user[role_ids][]" value={role.id} />
+          <% end %>
+
           <input
             type="checkbox"
             name="user[role_ids][]"
             value={role.id}
-            checked={role.id in selected_role_ids}
-            disabled={
-              is_self and (role.name == "admin" or role.name == "superuser")
-            }
+            checked={checked}
+            disabled={protected}
           />
           <%= role.name %>
         </div>
